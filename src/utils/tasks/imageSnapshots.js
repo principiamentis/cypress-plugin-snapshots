@@ -6,7 +6,7 @@ const { merge } = require('lodash');
 const rimraf = require('rimraf').sync;
 const getSnapshotFilename = require('../image/getSnapshotFilename');
 const getImageData = require('../image/getImageData');
-const { IMAGE_TYPE_ACTUAL } = require('../../constants');
+const { IMAGE_TYPE_ACTUAL, IMAGE_TYPE_DIFF } = require('../../constants');
 const { DEFAULT_IMAGE_CONFIG } = require('../../config');
 
 function moveActualImageToSnapshotsDirectory({image, snapshotTitle, testFile} = {}) {
@@ -14,7 +14,13 @@ function moveActualImageToSnapshotsDirectory({image, snapshotTitle, testFile} = 
     const filename = getSnapshotFilename(testFile, snapshotTitle, IMAGE_TYPE_ACTUAL);
     rimraf(filename);
     if (fs.existsSync(image.path)) {
-      fs.moveSync(image.path, filename);
+      fs.copyFileSync(image.path, filename);
+    }
+    if (fs.existsSync(getSnapshotFilename(testFile, snapshotTitle, IMAGE_TYPE_DIFF))) {
+      fs.copyFileSync(getSnapshotFilename(testFile, snapshotTitle, IMAGE_TYPE_DIFF), `${image.path}.diff.png`);
+    }
+    if (fs.existsSync(getSnapshotFilename(testFile, snapshotTitle))) {
+      fs.copyFileSync(getSnapshotFilename(testFile, snapshotTitle), `${image.path}.spec.png`);
     }
     image.path = filename;
   }
